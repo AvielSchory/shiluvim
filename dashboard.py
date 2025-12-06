@@ -110,9 +110,9 @@ else:
     # Column 2: Map + Brightness Histogram
     # -------------------------------
     with col1:
-        st.subheader("World Map of Active Fires")
+        st.subheader("World Map of Active Fires Today")
         m = folium.Map(location=[0, 0], zoom_start=2, tiles="CartoDB dark_matter")
-        for _, row in df.iterrows():
+        for _, row in df[df["acq_date"] == max(df["acq_date"])].iterrows():
             lat, lon = row["latitude"], row["longitude"]
             frp = row.get("frp", None)
             conf = row.get("confidence", None)
