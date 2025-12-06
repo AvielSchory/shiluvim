@@ -27,7 +27,7 @@ else:
     # Column 1: Confidence & Satellite summary
     # -------------------------------
     with col1:
-        st.subheader("Confidence Breakdown (Donut)")
+        st.subheader("Confidence Breakdown")
 
         # Confidence breakdown h/n/l per satellite
         conf_breakdown = (
