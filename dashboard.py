@@ -90,13 +90,14 @@ else:
             lat, lon = row["latitude"], row["longitude"]
             frp = row.get("frp", None)
             conf = row.get("confidence", None)
+            bright_ti4 = row.get("bright_ti4", None)
             popup_text = (
                 f"Date: {row['acq_date'].date()} {row['acq_time']} UTC<br>"
                 f"Satellite: {row['satellite']} ({row['instrument']})<br>"
                 f"Confidence: {conf}<br>"
                 f"FRP: {frp} MW<br>"
                 f"Day/Night: {row['daynight']}<br>"
-                f"Brightness: {row['bright_ti4']}"
+                f"Brightness: {bright_ti4}"
             )
             folium.CircleMarker(
                 location=[lat, lon],
