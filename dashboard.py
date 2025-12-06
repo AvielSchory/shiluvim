@@ -3,7 +3,7 @@ import folium
 from streamlit_folium import st_folium
 import pandas as pd
 import altair as alt
-from fires_data import load_data
+from data_manager import load_data
 
 st.set_page_config(page_title="Global Fire Dashboard", layout="wide")
 
@@ -27,29 +27,50 @@ else:
     # Column 1: Confidence & Satellite summary
     # -------------------------------
     with col1:
-        st.subheader("Confidence by Satellite")
+        st.subheader("Confidence Breakdown (Donut)")
 
-        conf_summary = (
-            df.assign(high_conf=(df["confidence"].astype(str).str.lower().isin(["h", "high"])))
-              .groupby("satellite")
-              .agg(total=("confidence", "count"),
-                   high=("high_conf", "sum"))
+        # Confidence breakdown h/n/l per satellite
+        conf_breakdown = (
+            df.assign(
+                conf_type=df["confidence"].astype(str).str.lower().map(
+                    lambda x: "h" if x in ["h", "high"]
+                    else "n" if x in ["n", "nominal"]
+                    else "l"
+                )
+            )
+            .groupby(["satellite", "conf_type"])
+            .size()
+            .reset_index(name="count")
         )
-        conf_summary["high_pct"] = conf_summary["high"] / conf_summary["total"] * 100
-        conf_summary = conf_summary.reset_index()
 
-        # Donut chart for high confidence percentage
-        donut = alt.Chart(conf_summary).mark_arc(innerRadius=50).encode(
-            theta="high_pct",
-            color="satellite",
-            tooltip=["satellite", "high_pct"]
+        # Compute percentages
+        total_counts = conf_breakdown.groupby("satellite")["count"].transform("sum")
+        conf_breakdown["pct"] = conf_breakdown["count"] / total_counts * 100
+
+        # Donut chart with custom colors
+        donut = alt.Chart(conf_breakdown).mark_arc(innerRadius=50).encode(
+            theta="pct:Q",
+            color=alt.Color(
+                "conf_type:N",
+                scale=alt.Scale(
+                    domain=["h", "n", "l"],
+                    range=["green", "orange", "red"]
+                ),
+                title="Confidence"
+            ),
+            tooltip=["satellite", "conf_type", "pct"]
         ).properties(width=250, height=250).configure_axis(grid=False)
 
         st.altair_chart(donut, use_container_width=True)
 
         st.subheader("Number of Fires by Satellite")
 
-        # Regular bar chart
+        conf_summary = (
+            df.groupby("satellite")
+              .size()
+              .reset_index(name="total")
+        )
+
         bar_sat = alt.Chart(conf_summary).mark_bar().encode(
             x=alt.X("satellite:N", title="Satellite"),
             y=alt.Y("total:Q", title="Number of Fires"),
@@ -60,7 +81,7 @@ else:
         st.altair_chart(bar_sat, use_container_width=True)
 
     # -------------------------------
-    # Column 2: Map + Top 10 states
+    # Column 2: Map + Brightness Histogram
     # -------------------------------
     with col2:
         st.subheader("World Map of Active Fires")
@@ -74,7 +95,8 @@ else:
                 f"Satellite: {row['satellite']} ({row['instrument']})<br>"
                 f"Confidence: {conf}<br>"
                 f"FRP: {frp} MW<br>"
-                f"Day/Night: {row['daynight']}"
+                f"Day/Night: {row['daynight']}<br>"
+                f"Brightness: {row.get('brightness', 'N/A')}"
             )
             folium.CircleMarker(
                 location=[lat, lon],
@@ -86,12 +108,18 @@ else:
             ).add_to(m)
         st_folium(m, width=900, height=600)
 
-        st.subheader("Top 10 States by Fire Count")
-        if "state" in df.columns:
-            top_states = df.groupby("state").size().sort_values(ascending=False).head(10)
-            st.table(top_states)
+        st.subheader("Brightness Distribution of Fires")
+
+        if "brightness" in df.columns:
+            hist = alt.Chart(df).mark_bar().encode(
+                x=alt.X("brightness:Q", bin=alt.Bin(maxbins=40), title="Brightness"),
+                y=alt.Y("count()", title="Number of Fires"),
+                tooltip=["count()"]
+            ).properties(width=900, height=300).configure_axis(grid=False)
+
+            st.altair_chart(hist, use_container_width=True)
         else:
-            st.info("State information not available in this dataset.")
+            st.info("Brightness data not available in this dataset.")
 
     # -------------------------------
     # Column 3: Time trends
@@ -109,10 +137,16 @@ else:
         st.subheader("Day vs Night Fires")
         daynight_counts = df["daynight"].value_counts().reset_index()
         daynight_counts.columns = ["daynight", "count"]
+
         bar_dn = alt.Chart(daynight_counts).mark_bar().encode(
             x=alt.X("daynight:N", title="Day/Night"),
             y=alt.Y("count:Q", title="Number of Fires"),
-            color="daynight:N",
+            color=alt.Color(
+                "daynight:N",
+                scale=alt.Scale(domain=["D", "N"], range=["orange", "blue"]),
+                title="Day/Night"
+            ),
             tooltip=["daynight", "count"]
         ).properties(width=300, height=250).configure_axis(grid=False)
+
         st.altair_chart(bar_dn, use_container_width=True)
