@@ -9,7 +9,11 @@ st.set_page_config(page_title="Global Fire Dashboard", layout="wide")
 st.title("🔥 Global Fire Dashboard")
 st.markdown("Data from NASA FIRMS (Near Real-Time Active Fire Detections)")
 
-df = load_data()
+@st.cache_data(ttl=3600)
+def get_data():
+    return load_data()
+
+df = get_data()
 
 if not df.empty:
     # Date slider
