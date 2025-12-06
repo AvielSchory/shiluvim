@@ -96,7 +96,7 @@ else:
                 f"Confidence: {conf}<br>"
                 f"FRP: {frp} MW<br>"
                 f"Day/Night: {row['daynight']}<br>"
-                f"Brightness: {row.get('brightness', 'N/A')}"
+                f"Brightness: {row['bright_ti4']}"
             )
             folium.CircleMarker(
                 location=[lat, lon],
