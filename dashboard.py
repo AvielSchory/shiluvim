@@ -21,12 +21,12 @@ if df.empty or "acq_date" not in df.columns:
 else:
     df.columns = df.columns.str.strip().str.lower()
 
-    col1, col2, col3 = st.columns((1.5, 4.5, 2), gap="medium")
+    col1, col2 = st.columns((4.5, 2), gap="medium")
 
     # -------------------------------
     # Column 1: Confidence & Satellite summary
     # -------------------------------
-    with col1:
+    with col2:
         st.subheader("Confidence Breakdown")
 
         # Confidence breakdown h/n/l per satellite
@@ -79,40 +79,7 @@ else:
         ).properties(width=250, height=250).configure_axis(grid=False)
 
         st.altair_chart(bar_sat, use_container_width=True)
-
-    # -------------------------------
-    # Column 2: Map + Brightness Histogram
-    # -------------------------------
-    with col2:
-        st.subheader("World Map of Active Fires")
-        m = folium.Map(location=[0, 0], zoom_start=2, tiles="CartoDB dark_matter")
-        for _, row in df.iterrows():
-            lat, lon = row["latitude"], row["longitude"]
-            frp = row.get("frp", None)
-            conf = row.get("confidence", None)
-            bright_ti4 = row.get("bright_ti4", None)
-            popup_text = (
-                f"Date: {row['acq_date'].date()} {row['acq_time']} UTC<br>"
-                f"Satellite: {row['satellite']} ({row['instrument']})<br>"
-                f"Confidence: {conf}<br>"
-                f"FRP: {frp} MW<br>"
-                f"Day/Night: {row['daynight']}<br>"
-                f"Brightness: {bright_ti4}"
-            )
-            folium.CircleMarker(
-                location=[lat, lon],
-                radius=3,
-                color="red" if str(conf).lower() in ["h", "high"] else "orange",
-                fill=True,
-                fill_opacity=0.7,
-                popup=popup_text,
-            ).add_to(m)
-        st_folium(m, width=900, height=600)
-
-    # -------------------------------
-    # Column 3: Time trends
-    # -------------------------------
-    with col3:
+        
         st.subheader("Total Fires by Date")
         fires_by_date = df.groupby(df["acq_date"].dt.date).size().reset_index(name="count")
         line = alt.Chart(fires_by_date).mark_line(point=True).encode(
@@ -138,3 +105,35 @@ else:
         ).properties(width=300, height=250).configure_axis(grid=False)
 
         st.altair_chart(bar_dn, use_container_width=True)
+
+    # -------------------------------
+    # Column 2: Map + Brightness Histogram
+    # -------------------------------
+    with col1:
+        st.subheader("World Map of Active Fires")
+        m = folium.Map(location=[0, 0], zoom_start=2, tiles="CartoDB dark_matter")
+        for _, row in df.iterrows():
+            lat, lon = row["latitude"], row["longitude"]
+            frp = row.get("frp", None)
+            conf = row.get("confidence", None)
+            bright_ti4 = row.get("bright_ti4", None)
+            popup_text = (
+                f"Date: {row['acq_date'].date()} {row['acq_time']} UTC<br>"
+                f"Satellite: {row['satellite']} ({row['instrument']})<br>"
+                f"Confidence: {conf}<br>"
+                f"FRP: {frp} MW<br>"
+                f"Day/Night: {row['daynight']}<br>"
+                f"Brightness: {bright_ti4}"
+            )
+            folium.CircleMarker(
+                location=[lat, lon],
+                radius=3,
+                color="red" if str(conf).lower() in ["h", "high"] else "orange",
+                fill=True,
+                fill_opacity=0.7,
+                popup=popup_text,
+            ).add_to(m)
+        st_folium(m, width=900, height=600)
+
+
+        
