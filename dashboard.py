@@ -27,9 +27,9 @@ else:
     # Column 1: Map of fires & Time series
     # -------------------------------
     with col1:
-        st.subheader("World Map of Active Fires Today")
+        st.subheader("World Map of Active Fires Today (up to 1000)")
         m = folium.Map(location=[0, 0], zoom_start=2, tiles="CartoDB dark_matter")
-        for _, row in df[df["acq_date"] == max(df["acq_date"])].iterrows():
+        for _, row in df[df["acq_date"] == max(df["acq_date"])].head(1000).iterrows():
             lat, lon = row["latitude"], row["longitude"]
             frp = row.get("frp", None)
             conf = row.get("confidence", None)
