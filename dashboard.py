@@ -109,19 +109,6 @@ else:
             ).add_to(m)
         st_folium(m, width=900, height=600)
 
-        st.subheader("Brightness Distribution of Fires")
-
-        if "bright_ti4" in df.columns:
-            hist = alt.Chart(df).mark_bar().encode(
-                x=alt.X("bright_ti4:Q", bin=alt.Bin(maxbins=40), title="bright_ti4"),
-                y=alt.Y("count()", title="Number of Fires"),
-                tooltip=["count()"]
-            ).properties(width=900, height=300).configure_axis(grid=False)
-
-            st.altair_chart(hist, use_container_width=True)
-        else:
-            st.info("Brightness data not available in this dataset.")
-
     # -------------------------------
     # Column 3: Time trends
     # -------------------------------
