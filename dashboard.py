@@ -3,7 +3,7 @@ import folium
 from streamlit_folium import st_folium
 import pandas as pd
 import altair as alt
-from data_manager import load_data
+from fires_data import load_data
 
 st.set_page_config(page_title="Global Fire Dashboard", layout="wide")
 
