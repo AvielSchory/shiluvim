@@ -3,9 +3,9 @@ import pandas as pd
 from io import StringIO
 
 MAP_KEY = "77c806abc404aa7361a523388ba72262"
-
+DAY_RANGE = 1095
 # Example: VIIRS Suomi-NPP, worldwide, last 1 day
-url = f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{MAP_KEY}/VIIRS_SNPP_NRT/world/10"
+url = f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{MAP_KEY}/VIIRS_SNPP_NRT/world/{DAY_RANGE}"
 
 def load_data():
     """Fetch FIRMS fire data and return as a DataFrame."""
