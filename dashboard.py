@@ -110,9 +110,9 @@ else:
 
         st.subheader("Brightness Distribution of Fires")
 
-        if "brightness" in df.columns:
+        if "bright_ti4" in df.columns:
             hist = alt.Chart(df).mark_bar().encode(
-                x=alt.X("brightness:Q", bin=alt.Bin(maxbins=40), title="Brightness"),
+                x=alt.X("bright_ti4:Q", bin=alt.Bin(maxbins=40), title="bright_ti4"),
                 y=alt.Y("count()", title="Number of Fires"),
                 tooltip=["count()"]
             ).properties(width=900, height=300).configure_axis(grid=False)
